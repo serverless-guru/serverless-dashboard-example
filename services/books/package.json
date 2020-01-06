@@ -1,0 +1,9 @@
+{
+    "scripts": {
+        "test": "jest"
+    },
+    "devDependencies": {
+        "aws-sdk": "^2.597.0",
+        "jest": "^24.9.0"
+    }
+}

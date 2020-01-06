@@ -1,0 +1,38 @@
+org: YOUR_ORG
+app: YOUR_APP
+service: app-api
+
+provider:
+    name: aws
+    runtime: nodejs12.x
+    stage: ${opt:stage, "dev"}
+    region: ${opt:region, "us-east-1"}
+    profile: ${opt:profile, "deployer"}
+
+custom:
+    base: ${self:app}-${self:service}-${self:provider.stage}
+
+functions:
+    test:
+        name: ${self:custom.base}-ping
+        handler: index.handler
+        description: ping function for API deployment
+        events:
+            - http:
+                  path: /ping
+                  method: any
+                  cors: true
+
+outputs:
+    ApiEndpoint:
+        Fn::Join:
+            - ''
+            - - https://
+              - Ref: ApiGatewayRestApi
+              - .execute-api.${self:provider.region}.amazonaws.com/${self:provider.stage}
+    ApiId:
+        Ref: ApiGatewayRestApi
+    ApiResourceId:
+        Fn::GetAtt:
+            - ApiGatewayRestApi
+            - RootResourceId

@@ -1,0 +1,37 @@
+org: YOUR_ORG
+app: YOUR_APP
+service: resource-db
+
+provider:
+    name: aws
+    runtime: nodejs12.x
+    stage: ${opt:stage, "dev"}
+    region: ${opt:region, "us-east-1"}
+
+custom:
+    base: ${self:service}-${self:provider.stage}
+
+resources:
+    Resources:
+        db:
+            Type: AWS::DynamoDB::Table
+            Properties:
+                TableName: ${self:app}-${self:custom.base}
+                AttributeDefinitions:
+                    - AttributeName: PK
+                      AttributeType: S
+                    - AttributeName: SK
+                      AttributeType: S
+                KeySchema:
+                    - AttributeName: PK
+                      KeyType: HASH
+                    - AttributeName: SK
+                      KeyType: RANGE
+                BillingMode: PAY_PER_REQUEST
+
+outputs:
+    arn:
+        Fn::GetAtt:
+            - db
+            - Arn
+    name: ${self:app}-${self:custom.base}

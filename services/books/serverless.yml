@@ -1,0 +1,48 @@
+org: YOUR_ORG
+app: YOUR_APP
+service: books
+
+package:
+    exclude:
+        - src/**
+        - .gitignore
+    include:
+        - src/handlers.js
+        - src/db.js
+        - src/validation.js
+        - src/io.js
+        - node_modules/**
+
+provider:
+    name: aws
+    runtime: nodejs12.x
+    stage: ${opt:stage, "dev"}
+    region: ${opt:region, "us-east-1"}
+    apiGateway:
+      minimumCompressionSize: 1024
+      restApiId: ${output:resource-api.ApiId}
+      restApiRootResourceId: ${output:resource-api.ApiResourceId}
+    iamRoleStatements:
+        - Effect: Allow
+          Action:
+              - dynamodb:Query
+              - dynamodb:PutItem
+          Resource: ${output:resource-db.arn}
+    environment:
+        TABLE: ${output:resource-db.name}
+
+functions:
+    addBook:
+        handler: ./src/handler.addBook
+        events:
+        - http:
+            method: get
+            path: hello
+          cors: true
+     getAllStoresBooks:
+        handler: ./src/handler.getAllStoresBooks
+        events:
+        - http:
+            method: get
+            path: hello
+          cors: true

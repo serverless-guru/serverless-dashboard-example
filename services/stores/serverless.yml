@@ -1,0 +1,50 @@
+org: YOUR_ORG
+app: YOUR_APP
+service: stores
+
+package:
+    exclude:
+        - src/**
+        - .gitignore
+    include:
+        - src/thirdPartyService.js
+        - src/handlers.js
+        - src/db.js
+        - src/validation.js
+        - src/io.js
+        - node_modules/**
+
+provider:
+    name: aws
+    runtime: nodejs12.x
+    stage: ${opt:stage, "dev"}
+    region: ${opt:region, "us-east-1"}
+    apiGateway:
+        minimumCompressionSize: 1024
+        restApiId: ${output:resource-api.ApiId}
+        restApiRootResourceId: ${output:resource-api.ApiResourceId}
+    iamRoleStatements:
+        - Effect: Allow
+          Action:
+              - dynamodb:Query
+              - dynamodb:PutItem
+          Resource: ${output:resource-db.arn}
+    environment:
+        TABLE: ${output:resource-db.name}
+        ACME_PASSWORD: ${param:ACME_PASSWORD}
+
+functions:
+    addStore:
+        handler: ./src/handlers.addStore
+        events:
+            - http:
+                  method: post
+                  path: store
+                  cors: true
+    getStore:
+        handler: ./src/handlers.getStore
+        events:
+            - http:
+                  method: get
+                  path: store/{id}
+                  cors: true
